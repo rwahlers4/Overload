@@ -12,6 +12,16 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 from pathlib import Path
 
+#Bug with force_text in django 4.0 fix
+import django
+from django.utils.encoding import force_str
+django.utils.encoding.force_text = force_str
+
+from django.utils.translation import gettext, gettext_lazy
+django.utils.translation.ugettext = gettext
+django.utils.translation.ugettext_lazy = gettext_lazy
+
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -37,8 +47,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
     'workout',
     'graphene_django',
+    'graphql_auth',
+    # 'graphql_jwt.refresh_token.apps.RefreshTokenConfig',
 ]
 
 MIDDLEWARE = [
@@ -124,7 +137,25 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = "users.User"
+
 #Graphene
 GRAPHENE = {
-    "SCHEMA":"workout.schema.schema"
+    "SCHEMA":"workout.schema.schema",
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
 }
+
+AUTHENTICATION_BACKENDS = [
+    #'graphql_jwt.backends.JSONWebTokenBackend',
+    'graphql_auth.backends.GraphQLAuthBackend'
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# GRAPHQL_JWT = {
+#     "JWT_VERIFY_EXPIRATION": True,
+
+#     # optional
+#     "JWT_LONG_RUNNING_REFRESH_TOKEN": True,
+# }
